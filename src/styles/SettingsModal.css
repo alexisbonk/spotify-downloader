@@ -1,0 +1,26 @@
+.spotify-settings-modal {
+  background: #282828;
+  border-radius: 16px;
+  padding: 32px 40px;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 1002;
+  box-shadow: 0 6px 32px 0 rgba(0, 0, 0, 0.30);
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  min-width: 320px;
+}
+.spotify-settings-modal input[type="text"] {
+  background: #191414;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 12px 16px;
+  font-size: 1.1em;
+}
+.spotify-settings-modal button {
+  margin-top: 12px;
+}

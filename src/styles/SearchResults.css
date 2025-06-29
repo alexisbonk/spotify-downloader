@@ -1,0 +1,75 @@
+.spotify-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(270px, 1fr));
+  gap: 18px;
+}
+
+.spotify-list li {
+  background: #191414;
+  border-radius: 14px;
+  padding: 18px 18px 14px 18px;
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  box-shadow: 0 2px 8px 0 rgba(0, 0, 0, 0.10);
+  transition: transform 0.15s, box-shadow 0.15s;
+  cursor: pointer;
+  position: relative;
+}
+
+.spotify-list li:hover {
+  transform: scale(1.03);
+  box-shadow: 0 4px 16px 0 rgba(30, 217, 96, 0.10);
+  z-index: 2;
+}
+
+.spotify-img-thumb {
+  width: 56px;
+  height: 56px;
+  border-radius: 9px;
+  object-fit: cover;
+  box-shadow: 0 2px 8px 0 rgba(0, 0, 0, 0.10);
+}
+
+.spotify-list-artist {
+  cursor: pointer;
+  font-weight: bold;
+  color: #fff;
+}
+
+.spotify-artist {
+  color: #b3b3b3;
+  font-size: 0.97em;
+  margin-left: 6px;
+}
+
+.spotify-btn-download {
+  font-size: 0.82em !important;
+  padding: 4px 10px !important;
+  border-radius: 14px !important;
+  height: 28px !important;
+  min-height: 0 !important;
+  margin-top: 6px !important;
+  margin-bottom: 0 !important;
+  box-shadow: none !important;
+  background: #1db954 !important;
+  color: #fff !important;
+  font-weight: 500 !important;
+  border: 1px solid #19a94b !important;
+  line-height: 1.1 !important;
+  letter-spacing: 0.01em;
+  transition: background 0.18s, color 0.18s;
+}
+
+.spotify-btn-download svg {
+  font-size: 1em !important;
+}
+
+.spotify-btn-download:hover {
+  background: #1ed760 !important;
+  color: #fff !important;
+  border-color: #1ed760 !important;
+}
