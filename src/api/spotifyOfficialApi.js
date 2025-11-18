@@ -1,4 +1,3 @@
-// Couche pour les appels directs à l'API Spotify officielle
 import axios from 'axios';
 
 export function searchSpotifyApi(query, type, accessToken) {
@@ -15,5 +14,3 @@ export function getUserPlaylists(userId, accessToken) {
   return axios.get(`https://api.spotify.com/v1/users/${userId}/playlists`,
     { headers: { Authorization: `Bearer ${accessToken}` } });
 }
-
-// Ajoute ici d'autres appels spécifiques à l'API officielle Spotify si besoin

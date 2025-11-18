@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import * as spotifyApi from '../api/spotifyApi';
 
-export default function useQueue(refreshInterval = 5000) {
+export default function useQueue(refreshInterval = 5000, autoRefresh = true) {
   const [queue, setQueue] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const intervalRef = useRef();
@@ -20,9 +20,12 @@ export default function useQueue(refreshInterval = 5000) {
 
   useEffect(() => {
     fetchQueue();
-    intervalRef.current = setInterval(fetchQueue, refreshInterval);
-    return () => clearInterval(intervalRef.current);
-  }, [refreshInterval]);
+    if (autoRefresh) {
+      intervalRef.current = setInterval(fetchQueue, refreshInterval);
+      return () => clearInterval(intervalRef.current);
+    }
+    return () => { if (intervalRef.current) clearInterval(intervalRef.current); };
+  }, [refreshInterval, autoRefresh]);
 
   return { queue, isLoading, fetchQueue };
 }

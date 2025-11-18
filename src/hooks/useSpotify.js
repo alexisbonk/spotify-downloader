@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 
 export function useSpotifySearch() {
   const [searchQuery, setSearchQuery] = useState('');
@@ -9,7 +9,12 @@ export function useSpotifySearch() {
   const [artistResults, setArtistResults] = useState([]);
   const [selectedArtistAlbums, setSelectedArtistAlbums] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [feedbackMessage, setFeedbackMessage] = useState('');
+  const [feedbackMessage] = useState('');
+  const setFeedbackMessage = useCallback((message) => {
+    if (message) {
+      console.log(`[Feedback] ${message}`);
+    }
+  }, []);
 
   return {
     searchQuery, setSearchQuery,
@@ -53,5 +58,6 @@ export function useDarkMode() {
 export function useSettings() {
   const [showSettings, setShowSettings] = useState(false);
   const [downloadPath, setDownloadPath] = useState('');
-  return { showSettings, setShowSettings, downloadPath, setDownloadPath };
+  const [plexUrl, setPlexUrl] = useState('');
+  return { showSettings, setShowSettings, downloadPath, setDownloadPath, plexUrl, setPlexUrl };
 }

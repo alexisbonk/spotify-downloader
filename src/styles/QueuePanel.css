@@ -3,7 +3,7 @@
   top: 0;
   right: -350px;
   width: 350px;
-  height: 100vh;
+  height: 93vh;
   background: #191414;
   box-shadow: -2px 0 16px 0 rgba(0, 0, 0, 0.16);
   z-index: 1200;
@@ -50,6 +50,7 @@
   border-bottom: 1px solid #282828;
   color: #b3b3b3;
 }
+
 .queue-title {
   max-width: 180px;
   min-width: 0;
@@ -58,6 +59,20 @@
   white-space: nowrap;
   margin-right: 10px;
   flex-shrink: 1;
+}
+
+/* Hover swap: show track count instead of title on item hover */
+.queue-title-primary {
+  display: inline;
+}
+.queue-title-hover {
+  display: none;
+}
+.queue-item-hover:hover .queue-title-primary {
+  display: none;
+}
+.queue-item-hover:hover .queue-title-hover {
+  display: inline;
 }
 
 
@@ -144,7 +159,13 @@
   gap: 18px;
   justify-content: flex-end;
   margin-top: 12px;
-  margin-bottom: 10px;
+  margin-bottom: 0;
+  position: sticky;
+  bottom: 0;
+  background: #191414ee;
+  padding: 16px 0 10px 0;
+  box-shadow: 0 -4px 16px 0 rgba(0, 0, 0, 0.12);
+  z-index: 2;
 }
 
 .queue-panel-actions .queue-refresh,

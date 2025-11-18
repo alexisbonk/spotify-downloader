@@ -31,6 +31,12 @@
   outline: none;
   transition: background 0.2s;
 }
+
+.spotify-search-input {
+  width: 400px;
+  max-width: 100%;
+  min-width: 200px;
+}
 .spotify-search-input:focus,
 .spotify-friend-input:focus {
   background: #191414;

@@ -1,54 +1,53 @@
 import React from 'react';
 import '../styles/Header.css';
-import { FaSearch, FaUserFriends } from 'react-icons/fa';
+import { FaSearch } from 'react-icons/fa';
 
 const Header = ({
   searchQuery,
   setSearchQuery,
+  searchMode,
+  setSearchMode,
+  searchType,
   handleSearch,
-  isLoading,
-  friendId,
-  setFriendId,
-  handleFriendSearch,
-  isFriendLoading,
-  friendError,
-  showFriendButton,
-  showFriendPlaylists,
-  onShowFriendPlaylists
+  isLoading
 }) => (
   <header className="spotify-header">
     <div className="spotify-header-search">
       <FaSearch />
+      {searchType === 'playlist' && (
+        <select
+          className="spotify-search-type-select"
+          value={searchMode}
+          onChange={e => setSearchMode(e.target.value)}
+          style={{marginRight: 10, borderRadius: 8, border: 'none', padding: '7px 10px', background: '#282828', color: '#fff'}}
+        >
+          <option value="playlist">By name</option>
+          <option value="friend">By friend</option>
+        </select>
+      )}
       <input
         className="spotify-search-input"
         type="text"
         value={searchQuery}
-        onChange={(e) => setSearchQuery(e.target.value)}
-        placeholder="Search for a track, album, playlist or artist"
-        onKeyDown={(e) => { if (e.key === 'Enter') handleSearch(); }}
+        onChange={e => setSearchQuery(e.target.value)}
+        placeholder={
+  searchType === 'playlist'
+    ? (searchMode === 'friend' ? 'Spotify username' : 'Search for a playlist')
+    : searchType === 'track'
+      ? 'Search for a track'
+      : searchType === 'album'
+        ? 'Search for an album'
+        : searchType === 'artist'
+          ? 'Search for an artist'
+          : 'Search'
+}
+        onKeyDown={e => { if (e.key === 'Enter') handleSearch(); }}
       />
-      <button className="spotify-btn-main" onClick={handleSearch}>Search</button>
-      {showFriendButton && (
-        <button className="spotify-btn-main" onClick={handleFriendSearch} style={{marginLeft: 8}}>
-          <FaUserFriends /> Voir playlists de l'ami
-        </button>
-      )}
-      {isLoading && <div className="loader"></div>}
+      <button className="spotify-btn-main" onClick={handleSearch} disabled={isLoading}>
+        Search
+      </button>
+      
     </div>
-    {showFriendButton && (
-      <div className="spotify-header-friend">
-        <FaUserFriends />
-        <input
-          className="spotify-friend-input"
-          type="text"
-          value={friendId}
-          onChange={e => setFriendId(e.target.value)}
-          placeholder="Friend's Spotify username or ID"
-        />
-        {isFriendLoading && <div className="loader"></div>}
-        {friendError && <div className="spotify-error">{friendError}</div>}
-      </div>
-    )}
   </header>
 );
 

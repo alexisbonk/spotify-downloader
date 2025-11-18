@@ -1,0 +1,130 @@
+.album-preview-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.65);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1600;
+  backdrop-filter: blur(2px);
+}
+
+.album-preview-modal {
+  background: #111;
+  border-radius: 18px;
+  width: min(720px, 92vw);
+  max-height: 84vh;
+  padding: 28px 32px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.55);
+  overflow: hidden;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.album-preview-close {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  background: rgba(255, 255, 255, 0.08);
+  border: none;
+  color: white;
+  border-radius: 999px;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.album-preview-close:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.album-preview-header {
+  display: flex;
+  gap: 20px;
+}
+
+.album-preview-art {
+  width: 160px;
+  height: 160px;
+  object-fit: cover;
+  border-radius: 14px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+}
+
+.album-preview-header h2 {
+  margin: 0;
+  font-size: 1.8em;
+}
+
+.album-preview-artist {
+  margin: 6px 0 4px;
+  color: #b3b3b3;
+  font-weight: 500;
+}
+
+.album-preview-meta {
+  margin: 0 0 12px;
+  color: #8f8f8f;
+  font-size: 0.95em;
+}
+
+.album-preview-body {
+  background: #161616;
+  border-radius: 16px;
+  padding: 18px 20px;
+  flex: 1;
+  overflow-y: auto;
+}
+
+.album-preview-body ol {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.album-preview-body li {
+  display: grid;
+  grid-template-columns: 32px 1fr 60px;
+  align-items: center;
+  gap: 12px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.track-index {
+  color: #8f8f8f;
+  font-weight: 600;
+  text-align: right;
+}
+
+.track-title {
+  margin: 0;
+  font-weight: 600;
+}
+
+.track-artist {
+  margin: 2px 0 0;
+  color: #b3b3b3;
+  font-size: 0.92em;
+}
+
+.track-duration {
+  text-align: right;
+  color: #8f8f8f;
+  font-variant-numeric: tabular-nums;
+}
+
+.album-preview-empty {
+  text-align: center;
+  color: #b3b3b3;
+  font-style: italic;
+}

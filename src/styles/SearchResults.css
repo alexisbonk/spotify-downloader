@@ -46,6 +46,16 @@
   margin-left: 6px;
 }
 
+.loader-vertical {
+  flex-direction: column;
+}
+
+.loader-large {
+  width: 50px !important;
+  height: 50px !important;
+  border-width: 6px !important;
+}
+
 .spotify-btn-download {
   font-size: 0.82em !important;
   padding: 4px 10px !important;

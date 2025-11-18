@@ -26,7 +26,8 @@
     "web-vitals": "^2.1.4"
   },
   "devDependencies": {
-    "concurrently": "^8.2.2"
+    "concurrently": "^8.2.2",
+    "cross-env": "^7.0.3"
   },
   "scripts": {
     "start": "react-scripts start",

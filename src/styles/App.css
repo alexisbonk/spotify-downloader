@@ -36,10 +36,9 @@ html {
   color: #fff;
   border: none;
   border-radius: 999px;
-  padding: 12px 32px;
+  padding: 10px 25px;
   font-size: 1.1em;
   font-weight: bold;
-  margin-top: 20px;
   cursor: pointer;
   display: inline-flex;
   align-items: center;
@@ -81,50 +80,13 @@ html {
   }
 }
 
-@media (max-width: 900px) {
-  .spotify-app-outer {
-    flex-direction: column;
-  }
-
-  .spotify-sidebar {
-    position: fixed;
-    left: -270px;
-    top: 0;
-    height: 100vh;
-    z-index: 1002;
-    transition: left 0.3s;
-  }
-
-  .spotify-sidebar.open {
-    left: 0;
-  }
-
-  .spotify-main {
-    padding-left: 0;
-  }
-}
-
-@media (max-width: 600px) {
-
-  .spotify-header,
-  .spotify-content {
-    padding: 12px 6vw;
-  }
-
-  .spotify-sidebar {
-    width: 80vw;
-    min-width: 0;
-  }
-
-  .spotify-sidebar-logo {
-    font-size: 1em;
-    padding-left: 10vw;
-  }
-
-  .spotify-settings-modal {
-    min-width: 90vw;
-    padding: 18px 6vw;
-  }
+.spotify-main {
+  flex: 1 1 0;
+  min-width: 0;
+  width: auto;
+  display: flex;
+  flex-direction: column;
+  padding-right: 60px;
 }
 
 .loader {
@@ -154,6 +116,14 @@ html {
   flex-direction: column;
   gap: 24px;
 }
+
+.loader-centered {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 180px;
+}
+
 
 #settings {
   margin-top: 10px;

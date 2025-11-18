@@ -34,5 +34,6 @@ backend/node_modules
 
 # backend logs
 backend/queue.json
+backend/settings.json
 backend/server.log
 

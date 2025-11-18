@@ -68,14 +68,24 @@ Create a `.env` at project root:
 SPOTIFY_CLIENT_ID=xxxxxxxxxxxxxxxxxxxxx
 SPOTIFY_CLIENT_SECRET=xxxxxxxxxxxxxxxxxxxxx
 DOWNLOAD_PATH=/Volumes/Main\ volume/MUSIC
-PORT=4000
+PORT=4420
 ```
+
+#### Frontend port configuration
+
+To change the port used by the React frontend (default is 3000), create a `.env` file at the root of the project and add:
+
+```
+PORT=3420
+```
+
+This will start the React frontend on port 3420 instead of 3000.
 
 ### 3. Hack away in dev mode
 ```bash
 $ npm run dev
 ```
-Navigate to `http://localhost:3000` and authenticate with Spotify.
+Navigate to `http://localhost:3420` and authenticate with Spotify.
 
 ### 4. Production build (Docker example)
 ```bash

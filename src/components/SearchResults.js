@@ -1,6 +1,8 @@
 import React from 'react';
 import '../styles/SearchResults.css';
 import { FaDownload, FaSignOutAlt } from 'react-icons/fa';
+import { FaLink } from 'react-icons/fa';
+import '../styles/ArtistAlbums.css';
 
 const SearchResults = ({
   searchType,
@@ -11,8 +13,26 @@ const SearchResults = ({
   selectedArtistAlbums,
   setSelectedArtistAlbums,
   handleArtistSelect,
-  handleDownload
+  handleDownload,
+  handleSyncPlexPlaylist,
+  handleOpenPreview,
+  isLoading
 }) => {
+  const openPreview = (item, type = 'album', event) => {
+    if (!handleOpenPreview) return;
+    if (event && typeof event.stopPropagation === 'function') {
+      event.stopPropagation();
+    }
+    handleOpenPreview(item, type);
+  };
+
+  if (isLoading) {
+    return (
+      <div className="loader-centered loader-vertical">
+        <div className="loader loader-large"></div>
+      </div>
+    );
+  }
   if (searchType === 'track') {
     return (
       <ul className="spotify-list">
@@ -35,14 +55,13 @@ const SearchResults = ({
     return (
       <ul className="spotify-list">
         {albumResults.map((item) => (
-          <li key={item.id}>
+          <li key={item.id} onClick={(e) => openPreview(item, 'album', e)}>
             {item.images?.[0] && (
               <img src={item.images[0].url} alt={item.name} className="spotify-img-thumb" />
             )}
             <div className="spotify-list-text">
               <span className="spotify-list-title">{item.name}</span>
               <span className="spotify-artist">{item.artists.map(artist => artist.name).join(', ')}</span>
-              <button className="spotify-btn-main spotify-btn-download" onClick={() => handleDownload(item, 'album')}><FaDownload style={{marginRight: 4}}/>Download</button>
             </div>
           </li>
         ))}
@@ -54,14 +73,27 @@ const SearchResults = ({
       <ul className="spotify-list">
         {playlistResults.map((item) => (
           item && (
-            <li key={item.id}>
+            <li key={item.id} style={{position: 'relative'}} onClick={(e) => openPreview(item, 'playlist', e)}>
               {item.images?.[0] && (
                 <img src={item.images[0].url} alt={item.name} className="spotify-img-thumb" />
               )}
               <div className="spotify-list-text">
                 <span className="spotify-list-title">{item.name}</span>
-                <button className="spotify-btn-main spotify-btn-download" onClick={() => handleDownload(item, 'playlist')}><FaDownload style={{marginRight: 4}}/>Download</button>
+                <span className="spotify-artist">{item.owner?.display_name}</span>
               </div>
+              <button
+                className="spotify-btn-plex-sync"
+                style={{position: 'absolute', bottom: 8, right: 8, background: 'none', border: 'none', cursor: 'pointer', opacity: 0.55, padding: 2}}
+                title="Synchroniser vers Plex"
+                onClick={async (e) => {
+                  e.stopPropagation();
+                  if (window.confirm('Synchroniser cette playlist vers Plex ?\n\nCela va créer une playlist Plex avec les morceaux locaux correspondants.')) {
+                    handleSyncPlexPlaylist(item);
+                  }
+                }}
+              >
+                <FaLink size={18} color="#E5A00D" />
+              </button>
             </li>
           )
         ))}
@@ -73,7 +105,9 @@ const SearchResults = ({
       <div>
         {!selectedArtistAlbums ? (
           <>
-            <h3>Artists</h3>
+            {artistResults && artistResults.length > 0 && (
+              <h3>Artists</h3>
+            )}
             <ul className="spotify-list">
               {artistResults.map((artist) => (
                 <li key={artist.id} onClick={() => handleArtistSelect(artist.id)} className="spotify-list-artist">
@@ -88,16 +122,30 @@ const SearchResults = ({
         ) : (
           <>
             <button className="spotify-btn-main" onClick={() => setSelectedArtistAlbums(null)}><FaSignOutAlt />Back</button>
-            <h3>Albums</h3>
+            <div className="artist-header">
+              <h3>Albums</h3>
+              <button 
+                className="spotify-btn-main spotify-btn-download" 
+                onClick={(e) => {
+                  e.stopPropagation();
+                  if (window.confirm(`Télécharger tous les albums (${selectedArtistAlbums.length}) ?`)) {
+                    selectedArtistAlbums.forEach(album => {
+                      handleDownload(album, 'album');
+                    });
+                  }
+                }}
+              >
+                <FaDownload style={{marginRight: 4}}/>Télécharger tous les albums
+              </button>
+            </div>
             <ul className="spotify-list">
               {selectedArtistAlbums.map((album) => (
-                <li key={album.id}>
+                <li key={album.id} onClick={(e) => openPreview(album, 'album', e)}>
                   {album.images?.[0] && (
                     <img src={album.images[0].url} alt={album.name} className="spotify-img-thumb" />
                   )}
                   <div className="spotify-list-text">
                     <span className="spotify-list-title">{album.name}</span>
-                    <button className="spotify-btn-main spotify-btn-download" onClick={() => handleDownload(album, 'album')}><FaDownload style={{marginRight: 4}}/>Download</button>
                   </div>
                 </li>
               ))}
