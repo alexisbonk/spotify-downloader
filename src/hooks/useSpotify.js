@@ -59,5 +59,19 @@ export function useSettings() {
   const [showSettings, setShowSettings] = useState(false);
   const [downloadPath, setDownloadPath] = useState('');
   const [plexUrl, setPlexUrl] = useState('');
-  return { showSettings, setShowSettings, downloadPath, setDownloadPath, plexUrl, setPlexUrl };
+  const [spotifyClientId, setSpotifyClientId] = useState('');
+  const [spotifyClientSecret, setSpotifyClientSecret] = useState('');
+  const [spotifyRedirectUri, setSpotifyRedirectUri] = useState('http://127.0.0.1:4420/callback');
+  const [plexToken, setPlexToken] = useState('');
+  const [plexServerId, setPlexServerId] = useState('');
+  return { 
+    showSettings, setShowSettings, 
+    downloadPath, setDownloadPath, 
+    plexUrl, setPlexUrl,
+    spotifyClientId, setSpotifyClientId,
+    spotifyClientSecret, setSpotifyClientSecret,
+    spotifyRedirectUri, setSpotifyRedirectUri,
+    plexToken, setPlexToken,
+    plexServerId, setPlexServerId
+  };
 }

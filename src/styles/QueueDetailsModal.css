@@ -1,0 +1,383 @@
+.queue-details-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+  backdrop-filter: blur(4px);
+}
+
+.queue-details-modal {
+  background: #191414;
+  border-radius: 12px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+  max-width: 600px;
+  width: 90%;
+  max-height: 80vh;
+  overflow-y: auto;
+  border: 1px solid #282828;
+}
+
+.queue-details-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 24px 28px 16px;
+  border-bottom: 1px solid #282828;
+}
+
+.queue-details-title-section {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex: 1;
+  min-width: 0;
+}
+
+.queue-details-image {
+  width: 64px;
+  height: 64px;
+  border-radius: 8px;
+  object-fit: cover;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  flex-shrink: 0;
+}
+
+.queue-details-header h3 {
+  color: #fff;
+  margin: 0;
+  font-size: 1.4em;
+  font-weight: 600;
+  max-width: calc(100% - 40px);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.queue-details-close {
+  background: none;
+  border: none;
+  color: #b3b3b3;
+  font-size: 1.2em;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 50%;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.queue-details-close:hover {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.queue-details-content {
+  padding: 24px 28px;
+}
+
+.queue-details-status {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 24px;
+  padding: 16px;
+  background: rgba(40, 40, 40, 0.5);
+  border-radius: 8px;
+  border-left: 4px solid #1DB954;
+}
+
+.status-icon {
+  font-size: 1.4em;
+}
+
+.status-icon.success {
+  color: #1DB954;
+}
+
+.status-icon.error {
+  color: #e74c3c;
+}
+
+.status-icon.running {
+  color: #3498db;
+  animation: pulse 1.5s infinite;
+}
+
+.status-icon.queued {
+  color: #f39c12;
+}
+
+.status-icon.canceled {
+  color: #95a5a6;
+}
+
+@keyframes pulse {
+
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.status-text {
+  color: #fff;
+  font-weight: 600;
+  font-size: 1.1em;
+}
+
+.partial-warning {
+  background: #f39c12;
+  color: #fff;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 0.85em;
+  font-weight: 600;
+}
+
+.queue-details-stats {
+  display: grid;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.stat-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 0;
+  border-bottom: 1px solid rgba(40, 40, 40, 0.5);
+}
+
+.stat-item label {
+  color: #b3b3b3;
+  font-weight: 500;
+  margin-right: 16px;
+}
+
+.stat-item span {
+  color: #fff;
+  font-weight: 600;
+  text-align: right;
+  max-width: 60%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.stat-item .partial {
+  color: #f39c12;
+}
+
+.stat-item .complete {
+  color: #1DB954;
+}
+
+.stat-item .failed-count {
+  color: #e74c3c;
+}
+
+.spotify-link {
+  color: #1DB954;
+  text-decoration: none;
+  font-weight: 600;
+  transition: color 0.2s;
+}
+
+.spotify-link:hover {
+  color: #1ed760;
+  text-decoration: underline;
+}
+
+.output-path {
+  font-family: 'Courier New', monospace;
+  font-size: 0.9em;
+  color: #b3b3b3 !important;
+  word-break: break-all;
+}
+
+.queue-details-failures {
+  margin-bottom: 24px;
+}
+
+.queue-details-failures h4 {
+  color: #e74c3c;
+  margin: 0 0 16px 0;
+  font-size: 1.1em;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.queue-details-failures h4::before {
+  content: "⚠️";
+}
+
+.failed-tracks-list {
+  background: rgba(231, 76, 60, 0.1);
+  border-radius: 8px;
+  padding: 16px;
+  border-left: 4px solid #e74c3c;
+}
+
+.failed-track {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(231, 76, 60, 0.2);
+}
+
+.failed-track:last-child {
+  border-bottom: none;
+}
+
+.track-name {
+  color: #fff;
+  font-weight: 500;
+  max-width: 60%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.failure-reason {
+  color: #e74c3c;
+  font-size: 0.9em;
+  font-style: italic;
+  text-align: right;
+  max-width: 35%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.queue-details-logs {
+  margin-bottom: 16px;
+}
+
+.queue-details-logs h4 {
+  color: #b3b3b3;
+  margin: 0 0 16px 0;
+  font-size: 1.1em;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.queue-details-logs h4::before {
+  content: "📋";
+}
+
+.logs-container {
+  background: rgba(40, 40, 40, 0.3);
+  border-radius: 8px;
+  padding: 16px;
+  max-height: 200px;
+  overflow-y: auto;
+  border: 1px solid rgba(40, 40, 40, 0.5);
+}
+
+.log-entry {
+  display: flex;
+  gap: 12px;
+  padding: 6px 0;
+  border-bottom: 1px solid rgba(40, 40, 40, 0.3);
+  font-family: 'Courier New', monospace;
+  font-size: 0.85em;
+}
+
+.log-entry:last-child {
+  border-bottom: none;
+}
+
+.log-entry.error {
+  color: #e74c3c;
+}
+
+.log-entry.warning {
+  color: #f39c12;
+}
+
+.log-entry.info {
+  color: #b3b3b3;
+}
+
+.log-entry.success {
+  color: #1DB954;
+}
+
+.log-timestamp {
+  color: #666;
+  min-width: 60px;
+  font-size: 0.8em;
+}
+
+.log-message {
+  flex: 1;
+  word-break: break-word;
+}
+
+.queue-details-modal::-webkit-scrollbar,
+.logs-container::-webkit-scrollbar {
+  width: 8px;
+}
+
+.queue-details-modal::-webkit-scrollbar-track,
+.logs-container::-webkit-scrollbar-track {
+  background: rgba(40, 40, 40, 0.3);
+  border-radius: 4px;
+}
+
+.queue-details-modal::-webkit-scrollbar-thumb,
+.logs-container::-webkit-scrollbar-thumb {
+  background: rgba(29, 185, 84, 0.6);
+  border-radius: 4px;
+}
+
+.queue-details-modal::-webkit-scrollbar-thumb:hover,
+.logs-container::-webkit-scrollbar-thumb:hover {
+  background: rgba(29, 185, 84, 0.8);
+}
+
+@media (max-width: 768px) {
+  .queue-details-modal {
+    width: 95%;
+    max-height: 90vh;
+  }
+
+  .queue-details-header,
+  .queue-details-content {
+    padding: 16px 20px;
+  }
+
+  .stat-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .stat-item span {
+    max-width: 100%;
+    text-align: left;
+  }
+
+  .failed-track {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+
+  .track-name,
+  .failure-reason {
+    max-width: 100%;
+    text-align: left;
+  }
+}

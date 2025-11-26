@@ -1,8 +1,8 @@
 .queue-panel {
   position: fixed;
   top: 0;
-  right: -350px;
-  width: 350px;
+  right: -450px;
+  width: 450px;
   height: 93vh;
   background: #191414;
   box-shadow: -2px 0 16px 0 rgba(0, 0, 0, 0.16);
@@ -61,27 +61,48 @@
   flex-shrink: 1;
 }
 
-/* Hover swap: show track count instead of title on item hover */
-.queue-title-primary {
-  display: inline;
+.queue-item-clickable {
+  cursor: pointer;
 }
-.queue-title-hover {
-  display: none;
+
+.queue-item-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex: 1;
+  padding: 8px 12px;
+  border-radius: 6px;
+  transition: background-color 0.2s;
 }
-.queue-item-hover:hover .queue-title-primary {
-  display: none;
+
+.queue-item-clickable .queue-item-content:hover {
+  background-color: rgba(29, 185, 84, 0.1);
 }
-.queue-item-hover:hover .queue-title-hover {
-  display: inline;
+
+.queue-title-secondary {
+  color: #888;
+  font-size: 0.9em;
+  margin-left: 8px;
+}
+
+.queue-info-icon {
+  color: #1DB954;
+  font-size: 1.1em;
+  opacity: 0.7;
+  transition: opacity 0.2s;
+}
+
+.queue-item-content:hover .queue-info-icon {
+  opacity: 1;
 }
 
 
 .queue-progress-bar-wrapper {
   display: flex;
   align-items: center;
-  width: 120px;
-  min-width: 120px;
-  max-width: 120px;
+  width: 200px;
+  min-width: 200px;
+  max-width: 200px;
   margin-left: 10px;
   margin-right: 10px;
 }
@@ -105,6 +126,11 @@
   width: var(--progress, 0%);
 }
 
+.queue-progress-bar-fill.partial {
+  background: #f39c12;
+  background: linear-gradient(90deg, #f39c12 0%, #e67e22 100%);
+}
+
 .queue-progress-bar-label {
   min-width: 36px;
   color: #fff;
@@ -114,7 +140,15 @@
   text-shadow: 0 1px 2px #000a;
 }
 
-/* Remove old style */
+.queue-progress-bar-label.partial {
+  color: #f39c12;
+  font-size: 1.1em;
+}
+
+.queue-progress-partial .queue-progress-bar {
+  background: #3a2a1a;
+}
+
 .queue-panel-list .queue-progress {
   display: none;
 }
@@ -137,8 +171,22 @@
 
 .queue-item-failed {
   opacity: 0.6;
-  text-decoration: line-through;
   color: #888 !important;
+}
+
+.queue-item-canceled {
+  opacity: 0.7;
+  color: #f1c40f !important;
+}
+
+.queue-item-failed .queue-item-content,
+.queue-item-canceled .queue-item-content {
+  cursor: pointer;
+}
+
+.queue-item-failed .queue-item-content:hover,
+.queue-item-canceled .queue-item-content:hover {
+  background-color: rgba(255, 255, 255, 0.05);
 }
 
 

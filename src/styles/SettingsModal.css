@@ -16,11 +16,13 @@
   border-radius: 22px;
   padding: 34px 40px;
   width: min(520px, 90vw);
+  max-height: 80vh;
   box-shadow: 0 30px 80px rgba(0, 0, 0, 0.55);
   display: flex;
   flex-direction: column;
   gap: 18px;
   position: relative;
+  overflow: hidden;
 }
 
 .settings-modal-close {
@@ -44,6 +46,32 @@
   background: rgba(255, 255, 255, 0.2);
 }
 
+.spin {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.settings-inline-feedback.error {
+  color: #dc3545;
+}
+
+.settings-modal-header {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
 .settings-modal-header h2 {
   margin: 0 0 6px;
 }
@@ -53,10 +81,51 @@
   color: #b3b3b3;
 }
 
+.language-toggle {
+  background: rgba(29, 185, 84, 0.1);
+  border: 1px solid rgba(29, 185, 84, 0.3);
+  color: #1DB954;
+  border-radius: 8px;
+  padding: 8px 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.9em;
+  font-weight: 500;
+}
+
+.language-toggle:hover {
+  background: rgba(29, 185, 84, 0.2);
+  border-color: rgba(29, 185, 84, 0.5);
+}
+
 .settings-modal-body {
   display: flex;
   flex-direction: column;
   gap: 16px;
+  overflow-y: auto;
+  max-height: calc(80vh - 120px);
+  padding-right: 8px;
+}
+
+.settings-modal-body::-webkit-scrollbar {
+  width: 6px;
+}
+
+.settings-modal-body::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 3px;
+}
+
+.settings-modal-body::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 3px;
+}
+
+.settings-modal-body::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.3);
 }
 
 .settings-modal-field {

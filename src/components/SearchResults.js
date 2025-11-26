@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useState } from 'react';
 import '../styles/SearchResults.css';
 import { FaDownload, FaSignOutAlt } from 'react-icons/fa';
 import { FaLink } from 'react-icons/fa';
 import '../styles/ArtistAlbums.css';
+import ConfirmationModal from './ConfirmationModal';
 
 const SearchResults = ({
   searchType,
@@ -18,6 +19,7 @@ const SearchResults = ({
   handleOpenPreview,
   isLoading
 }) => {
+  const [showDownloadModal, setShowDownloadModal] = useState(false);
   const openPreview = (item, type = 'album', event) => {
     if (!handleOpenPreview) return;
     if (event && typeof event.stopPropagation === 'function') {
@@ -34,9 +36,10 @@ const SearchResults = ({
     );
   }
   if (searchType === 'track') {
+    const tracks = trackResults.tracks?.items || [];
     return (
       <ul className="spotify-list">
-        {trackResults.map((track) => (
+        {tracks.map((track) => (
           <li key={track.id}>
             {track.album?.images?.[0] && (
               <img src={track.album.images[0].url} alt={track.name} className="spotify-img-thumb" />
@@ -54,7 +57,7 @@ const SearchResults = ({
   if (searchType === 'album') {
     return (
       <ul className="spotify-list">
-        {albumResults.map((item) => (
+        {(albumResults.albums?.items || []).map((item) => (
           <li key={item.id} onClick={(e) => openPreview(item, 'album', e)}>
             {item.images?.[0] && (
               <img src={item.images[0].url} alt={item.name} className="spotify-img-thumb" />
@@ -69,9 +72,16 @@ const SearchResults = ({
     );
   }
   if (searchType === 'playlist') {
+    let playlists = [];
+    if (Array.isArray(playlistResults)) {
+      playlists = playlistResults;
+    } else if (playlistResults && typeof playlistResults === 'object') {
+      playlists = playlistResults.playlists?.items || [];
+    }
+    
     return (
       <ul className="spotify-list">
-        {playlistResults.map((item) => (
+        {playlists.map((item) => (
           item && (
             <li key={item.id} style={{position: 'relative'}} onClick={(e) => openPreview(item, 'playlist', e)}>
               {item.images?.[0] && (
@@ -101,15 +111,16 @@ const SearchResults = ({
     );
   }
   if (searchType === 'artist') {
+    const artists = artistResults.artists?.items || [];
     return (
       <div>
         {!selectedArtistAlbums ? (
           <>
-            {artistResults && artistResults.length > 0 && (
+            {artists.length > 0 && (
               <h3>Artists</h3>
             )}
             <ul className="spotify-list">
-              {artistResults.map((artist) => (
+              {artists.map((artist) => (
                 <li key={artist.id} onClick={() => handleArtistSelect(artist.id)} className="spotify-list-artist">
                   {artist.images?.[0] && (
                     <img src={artist.images[0].url} alt={artist.name} className="spotify-img-thumb" />
@@ -128,18 +139,14 @@ const SearchResults = ({
                 className="spotify-btn-main spotify-btn-download" 
                 onClick={(e) => {
                   e.stopPropagation();
-                  if (window.confirm(`Télécharger tous les albums (${selectedArtistAlbums.length}) ?`)) {
-                    selectedArtistAlbums.forEach(album => {
-                      handleDownload(album, 'album');
-                    });
-                  }
+                  setShowDownloadModal(true);
                 }}
               >
                 <FaDownload style={{marginRight: 4}}/>Télécharger tous les albums
               </button>
             </div>
             <ul className="spotify-list">
-              {selectedArtistAlbums.map((album) => (
+              {selectedArtistAlbums && Array.isArray(selectedArtistAlbums) && selectedArtistAlbums.map((album) => (
                 <li key={album.id} onClick={(e) => openPreview(album, 'album', e)}>
                   {album.images?.[0] && (
                     <img src={album.images[0].url} alt={album.name} className="spotify-img-thumb" />
@@ -152,6 +159,19 @@ const SearchResults = ({
             </ul>
           </>
         )}
+        
+        <ConfirmationModal
+          isOpen={showDownloadModal}
+          onClose={() => setShowDownloadModal(false)}
+          onConfirm={() => {
+            selectedArtistAlbums && selectedArtistAlbums.forEach(album => {
+              handleDownload(album, 'album');
+            });
+            setShowDownloadModal(false);
+          }}
+          albumCount={selectedArtistAlbums?.length || 0}
+          showWarning={true}
+        />
       </div>
     );
   }

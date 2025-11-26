@@ -12,7 +12,7 @@ export default function useQueue(refreshInterval = 5000, autoRefresh = true) {
       const res = await spotifyApi.fetchQueue();
       setQueue(res.data);
     } catch (e) {
-      // Optionally handle error
+      console.error('Error fetching queue:', e);
     } finally {
       setIsLoading(false);
     }

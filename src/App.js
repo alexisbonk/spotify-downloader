@@ -8,6 +8,7 @@ import { IconContext } from 'react-icons';
 import Header from './components/Header';
 import Sidebar from './components/Sidebar';
 import SettingsModal from './components/SettingsModal';
+import { LanguageProvider } from './contexts/LanguageContext';
 
 import axios from 'axios';
 import Footer from './components/Footer';
@@ -27,7 +28,7 @@ function App() {
   const { queue, isLoading: isQueueLoading, fetchQueue } = useQueue(5000, autoRefreshQueue);
   const { searchQuery, setSearchQuery, searchType, setSearchType, trackResults, setTrackResults, albumResults, setAlbumResults, playlistResults, setPlaylistResults, artistResults, setArtistResults, selectedArtistAlbums, setSelectedArtistAlbums, isLoading, setIsLoading, feedbackMessage, setFeedbackMessage } = useSpotifySearch();
   
-  const { showSettings, setShowSettings, downloadPath, setDownloadPath, plexUrl, setPlexUrl } = useSettings();
+  const { showSettings, setShowSettings, downloadPath, setDownloadPath, plexUrl, setPlexUrl, spotifyClientId, setSpotifyClientId, spotifyClientSecret, setSpotifyClientSecret, spotifyRedirectUri, setSpotifyRedirectUri, plexToken, setPlexToken, plexServerId, setPlexServerId } = useSettings();
   const [accessToken, setAccessToken] = React.useState('');
   const [isQueuePanelOpen, setIsQueuePanelOpen] = React.useState(false);
   const [previewItem, setPreviewItem] = React.useState(null);
@@ -45,10 +46,10 @@ function App() {
         if (parsed.searchType !== undefined) setSearchType(parsed.searchType);
         if (parsed.searchMode !== undefined) setSearchMode(parsed.searchMode);
         if (parsed.friendSearchQuery !== undefined) setFriendSearchQuery(parsed.friendSearchQuery);
-        if (Array.isArray(parsed.trackResults)) setTrackResults(parsed.trackResults);
-        if (Array.isArray(parsed.albumResults)) setAlbumResults(parsed.albumResults);
-        if (Array.isArray(parsed.playlistResults)) setPlaylistResults(parsed.playlistResults);
-        if (Array.isArray(parsed.artistResults)) setArtistResults(parsed.artistResults);
+        if (parsed.trackResults !== undefined) setTrackResults(parsed.trackResults);
+        if (parsed.albumResults !== undefined) setAlbumResults(parsed.albumResults);
+        if (parsed.playlistResults !== undefined) setPlaylistResults(parsed.playlistResults);
+        if (parsed.artistResults !== undefined) setArtistResults(parsed.artistResults);
       }
     } catch (e) {
       console.error('Failed to parse search state', e);
@@ -68,8 +69,23 @@ function App() {
       if (res.data.plexUrl !== undefined) {
         setPlexUrl(res.data.plexUrl || '');
       }
+      if (res.data.spotifyClientId !== undefined) {
+        setSpotifyClientId(res.data.spotifyClientId || '');
+      }
+      if (res.data.spotifyClientSecret !== undefined) {
+        setSpotifyClientSecret(res.data.spotifyClientSecret || '');
+      }
+      if (res.data.spotifyRedirectUri !== undefined) {
+        setSpotifyRedirectUri(res.data.spotifyRedirectUri || 'http://127.0.0.1:4420/callback');
+      }
+      if (res.data.plexToken !== undefined) {
+        setPlexToken(res.data.plexToken || '');
+      }
+      if (res.data.plexServerId !== undefined) {
+        setPlexServerId(res.data.plexServerId || '');
+      }
     });
-  }, [setAccessToken, setDownloadPath, setAutoRefreshQueue, setPlexUrl, setSearchQuery, setSearchType, setSearchMode, setTrackResults, setAlbumResults, setPlaylistResults, setArtistResults]);
+  }, [setAccessToken, setDownloadPath, setAutoRefreshQueue, setPlexUrl, setSpotifyClientId, setSpotifyClientSecret, setSpotifyRedirectUri, setPlexToken, setPlexServerId, setSearchQuery, setSearchType, setSearchMode, setTrackResults, setAlbumResults, setPlaylistResults, setArtistResults]);
 
   const [isHydrated, setIsHydrated] = React.useState(false);
 
@@ -175,11 +191,14 @@ function App() {
     if (searchType === 'playlist' && searchMode === 'friend') {
       spotifyApi.fetchFriendPlaylists(inputValue, accessToken)
         .then(res => {
-          setPlaylistResults(res.data || []);
-          setFeedbackMessage(res.data.length === 0 && 'No playlists found for this user.');
+          const playlists = res.data?.items || [];
+          setPlaylistResults(playlists);
+          setFeedbackMessage(playlists.length === 0 ? 'No playlists found for this user.' : null);
         })
-        .catch(() => {
-          setFeedbackMessage('Could not retrieve playlists for this user.');
+        .catch((error) => {
+          console.error('Error fetching friend playlists:', error);
+          setPlaylistResults([]);
+          setFeedbackMessage('Unable to fetch playlists for this user.');
         })
         .finally(finishLoading);
       return;
@@ -220,7 +239,7 @@ function App() {
     setFeedbackMessage('Fetching albums...');
     spotifyApi.fetchArtistAlbums(artistId, accessToken)
       .then(res => {
-        setSelectedArtistAlbums(res.data);
+        setSelectedArtistAlbums(res.data.items || []);
         setIsLoading(false);
         setFeedbackMessage('Albums loaded.');
       })
@@ -281,12 +300,16 @@ function App() {
 
 
   const handlePathChange = () => {
-    spotifyApi.updateSettings(downloadPath, autoRefreshQueue, plexUrl).then(() => {
-      setFeedbackMessage('Settings saved.');
-    }).catch(err => {
-      console.error("Error saving settings: ", err);
-      setFeedbackMessage('Error saving settings.');
-    });
+    return spotifyApi.updateSettings(downloadPath, autoRefreshQueue, plexUrl, spotifyClientId, spotifyClientSecret, spotifyRedirectUri, plexToken, plexServerId)
+      .then(() => {
+        setFeedbackMessage('Settings saved.');
+        return { ok: true };
+      })
+      .catch(err => {
+        console.error("Error saving settings: ", err);
+        setFeedbackMessage('Error saving settings.');
+        throw err;
+      });
   };
 
   const handleResetQueue = () => {
@@ -313,7 +336,8 @@ function App() {
   };
 
   return (
-    <IconContext.Provider value={{ size: '1.3em' }}>
+    <LanguageProvider>
+      <IconContext.Provider value={{ size: '1.3em' }}>
       {!accessToken ? (
         <div className="spotify-login-bg">
           <div className="spotify-login-card">
@@ -350,6 +374,16 @@ function App() {
                   setPlexUrl={setPlexUrl}
                   autoRefreshQueue={autoRefreshQueue}
                   setAutoRefreshQueue={setAutoRefreshQueue}
+                  spotifyClientId={spotifyClientId}
+                  setSpotifyClientId={setSpotifyClientId}
+                  spotifyClientSecret={spotifyClientSecret}
+                  setSpotifyClientSecret={setSpotifyClientSecret}
+                  spotifyRedirectUri={spotifyRedirectUri}
+                  setSpotifyRedirectUri={setSpotifyRedirectUri}
+                  plexToken={plexToken}
+                  setPlexToken={setPlexToken}
+                  plexServerId={plexServerId}
+                  setPlexServerId={setPlexServerId}
                   handlePathChange={handlePathChange}
                   onClose={() => setShowSettings(false)}
                 />
@@ -404,7 +438,8 @@ function App() {
           </main>
         </div>
       )}
-    </IconContext.Provider>
+      </IconContext.Provider>
+    </LanguageProvider>
   );
 }
 

@@ -1,11 +1,10 @@
-# 🎧 spotify-download
+# 🎧 Spotify Downloader
 
 ![MIT License](https://img.shields.io/badge/license-MIT-green)
 ![PRs welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)
-![Build](https://img.shields.io/github/actions/workflow/status/yourname/nastify/ci.yml?branch=main)
 
 > Download Spotify tracks, albums, and playlists with a single click.  
-> Explore public playlists, manage your download queue, and sync your music library – all in a modern, dark-mode interface.
+> Explore public playlists, manage your download queue, and sync your music library – all in a modern, responsive interface with Material-UI components.
 
 <p align="center">
   <img src="docs/demo.gif" alt="spotify-download demo" width="720"/>
@@ -17,11 +16,15 @@
 
 - 🔍 Search for tracks, albums, playlists, and artists
 - ⬇️ One-click downloads to your chosen folder (NAS-friendly)
-- 🧑‍🤝‍🧑 Explore any user’s public playlists
-- 📋 Live queue with progress and controls
+- 🧑‍🤝‍🧑 Explore any user's public playlists
+- 📋 Advanced queue management with visual progress indicators
+- 🎯 Improved error handling with detailed French error messages
+- 📊 Clean progress tracking without confusing percentage displays
 - ☁️ Uses the official Spotify API for search & metadata
 - 🎧 Audio powered by [spotDL](https://github.com/spotDL/spotify-downloader)
-- 🌗 Responsive dark UI (React, CSS Grid)
+- 🎨 Modern UI with Material-UI, React Icons, and Tailwind CSS
+- 🔔 Toast notifications for user feedback
+- 📱 Fully responsive design
 
 ## 🖼️ Screenshots
 
@@ -32,15 +35,19 @@
 ## 🏗️ Architecture Overview
 
 ```
-spotify-download/
- ├─ frontend/ (React)
+spotify-downloader/
+ ├─ src/ (React Frontend)
  │   ├─ components/
- │   ├─ hooks/
+ │   ├─ contexts/
  │   ├─ api/
  │   └─ styles/
- └─ backend/ (Node + Express)
-     ├─ server.js
-     └─ logger/
+ ├─ backend/ (Node.js + Express)
+ │   ├─ routes/
+ │   ├─ services/
+ │   ├─ data/
+ │   └─ server.js
+ └─ public/
+     └─ static assets
 ```
 
 ---
@@ -50,16 +57,19 @@ spotify-download/
 This project relies on the amazing [spotDL](https://github.com/spotDL/spotify-downloader) for audio downloads.  
 Check out their project and give them a star!
 
+## 🚀 Prerequisites
 
+- Node.js (v14 or higher)
 - A Spotify developer application (Client ID/Secret)
-- **yt-dlp** installed on the server _(optional – can be bundled in Docker)_
+- **spotDL** installed on the system
+- **yt-dlp** (usually installed with spotDL)
 
 ### 1. Clone & install
 ```bash
-$ git clone https://github.com/yourname/nastify.git
-$ cd nastify
+$ git clone https://github.com/yourname/spotify-downloader.git
+$ cd spotify-downloader
 $ npm install
-$ npm run setup-backend
+$ cd backend && npm install && cd ..
 ```
 
 ### 2. Configure env
@@ -81,26 +91,47 @@ PORT=3420
 
 This will start the React frontend on port 3420 instead of 3000.
 
-### 3. Hack away in dev mode
+## 🛠️ Tech Stack
+
+### Frontend
+- **React 19** - UI framework
+- **Material-UI** - Component library
+- **Tailwind CSS** - Utility-first CSS
+- **React Icons** - Icon library
+- **Axios** - HTTP client
+- **React Toastify** - Notifications
+
+### Backend
+- **Node.js** - Runtime
+- **Express** - Web framework
+- **Axios** - HTTP client
+- **CORS** - Cross-origin resource sharing
+- **spotDL** - Audio download engine
+
+### 3. Start development servers
 ```bash
 $ npm run dev
 ```
-Navigate to `http://localhost:3420` and authenticate with Spotify.
+This will start both frontend (React) and backend (Express) servers concurrently.
+Navigate to `http://localhost:3000` (or your configured port) and authenticate with Spotify.
 
-### 4. Production build (Docker example)
+### 4. Production build
 ```bash
-$ docker build -t nastify .
-$ docker run -d -p 80:80 nastify
+$ npm run build
 ```
 
 ## ⚙️ Available NPM scripts
 | Command | Description |
 |---------|-------------|
-| `npm run dev` | Front & back in watch mode |
-| `npm run start:frontend` | React only |
-| `npm run start:backend` | Express only |
-| `npm run build` | Optimised React build |
-| `npm test` | Vitest / Jest unit tests |
+| `npm run dev` | Start both frontend and backend in development mode |
+| `npm start` | Start React frontend only |
+| `npm run build` | Create optimized React build |
+| `npm test` | Run React tests |
+
+### Backend scripts (run from backend/ directory)
+| Command | Description |
+|---------|-------------|
+| `npm start` | Start Express server |
 
 ## 🧑‍💻 Contributing
 1. Fork the repo & create your feature branch: `git checkout -b amazing-feature`

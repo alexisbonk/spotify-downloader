@@ -1,6 +1,6 @@
 const PlexApi = require('./plexApi');
 
-const logToFile = require('./logToFile');
+const logToFile = require('../utils/logToFile');
 
 async function syncPlexPlaylist({ spotifyTracks, plexConfig, playlistTitle }) {
   logToFile(`[PLEX_SYNC:${playlistTitle}] → Start sync`);
