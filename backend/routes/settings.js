@@ -16,6 +16,7 @@ router.post('/', async (req, res) => {
   const { 
     downloadPath, 
     autoRefreshQueue, 
+    refreshInterval, 
     plexUrl, 
     spotifyClientId, 
     spotifyClientSecret, 
@@ -28,12 +29,13 @@ router.post('/', async (req, res) => {
   let errors = [];
 
   const validateSpotifyCredentials = async () => {
-    if (spotifyClientId === undefined && spotifyClientSecret === undefined) return;
+    if ((spotifyClientId === undefined || spotifyClientId === '' || spotifyClientId === null) && 
+        (spotifyClientSecret === undefined || spotifyClientSecret === '' || spotifyClientSecret === null)) return;
     
     const clientId = spotifyClientId ?? settings.spotifyClientId;
     const clientSecret = spotifyClientSecret ?? settings.spotifyClientSecret;
     
-    if (!clientId || !clientSecret) return;
+    if (!clientId || !clientSecret || clientId === '' || clientSecret === '') return;
     
     try {
       const testAuth = Buffer.from(`${clientId}:${clientSecret}`).toString('base64');
@@ -57,10 +59,12 @@ router.post('/', async (req, res) => {
   };
 
   const validatePlexToken = async () => {
-    if (plexToken === undefined || !plexToken || !plexUrl) return;
+    if (plexToken === undefined || plexToken === '' || plexToken === null) return;
+    
+    const testPlexUrl = plexUrl || settings.plexUrl;
+    if (!testPlexUrl) return;
     
     try {
-      const testPlexUrl = plexUrl || settings.plexUrl;
       const response = await axios.get(`${testPlexUrl}/identity`, {
         headers: { 'X-Plex-Token': plexToken },
         timeout: 5000
@@ -80,8 +84,9 @@ router.post('/', async (req, res) => {
 
   if (errors.length > 0) {
     return res.status(400).json({ 
-      error: 'Validation failed', 
-      details: errors 
+      success: false,
+      message: errors.join('. '),
+      errors: errors
     });
   }
 
@@ -98,6 +103,13 @@ router.post('/', async (req, res) => {
       action: () => {
         settings.autoRefreshQueue = !!autoRefreshQueue;
         logToFile(`[SETTINGS] ⚙️  Settings updated → autoRefreshQueue set to: ${autoRefreshQueue}`, 'gray');
+      }
+    },
+    { 
+      condition: refreshInterval !== undefined, 
+      action: () => {
+        settings.refreshInterval = parseInt(refreshInterval);
+        logToFile(`[SETTINGS] ⚙️  Settings updated → refreshInterval set to: ${refreshInterval}ms`, 'gray');
       }
     },
     { 
@@ -153,9 +165,9 @@ router.post('/', async (req, res) => {
 
   if (changed) {
     saveSettings();
-    res.status(200).send(settings);
+    res.status(200).json({ success: true, message: 'Settings saved successfully', settings });
   } else {
-    res.status(400).send('Missing settings fields');
+    res.status(400).json({ success: false, message: 'No valid settings fields provided' });
   }
 });
 

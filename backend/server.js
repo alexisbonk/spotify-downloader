@@ -37,9 +37,27 @@ app.use('/', downloadRoutes);
 app.use('/', plexRoutes);
 app.use('/', validateRoutes);
 
+const os = require('os');
 const PORT = process.env.PORT || 4420;
-app.listen(PORT, () => {
-  logToFile(`Server running on port ${PORT} 🚀`, 'green');
+const HOST = '0.0.0.0';
+
+const getLocalIP = () => {
+  const interfaces = os.networkInterfaces();
+  for (const name of Object.keys(interfaces)) {
+    for (const iface of interfaces[name]) {
+      if (iface.family === 'IPv4' && !iface.internal) {
+        return iface.address;
+      }
+    }
+  }
+  return 'localhost';
+};
+
+const localIP = getLocalIP();
+
+app.listen(PORT, HOST, () => {
+  logToFile(`Server running on http://${HOST}:${PORT} 🚀`, 'green');
+  console.log(`Server is accessible on your local network at: http://${localIP}:${PORT}`);
 });
 
 module.exports = app;

@@ -34,7 +34,11 @@
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
-    "dev": "concurrently \"npm start\" \"npm start --prefix backend\""
+    "server": "npm start --prefix backend",
+    "dev": "node start-dev.js",
+    "dev-simple": "concurrently \"npm run server\" \"npm start\"",
+    "dev-frontend": "npm start",
+    "dev-backend": "npm run server"
   },
   "eslintConfig": {
     "extends": [

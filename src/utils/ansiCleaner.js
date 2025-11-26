@@ -2,12 +2,12 @@ export const cleanAnsiCodes = (text) => {
   if (!text) return '';
   
   return text
-    .replace(/\u001b\[[0-9;]*[mGKHJA]/g, '')
-    .replace(/\033\[[0-9;]*[mGKHJA]/g, '')
-    .replace(/\[[0-9;]*[mGKHJA]/g, '')
-    .replace(/\[38;[0-9;]+m/g, '')
-    .replace(/\[4;[0-9]+m/g, '')
-    .replace(/\s+/g, ' ')
+    .replace(/\\u001b\\[[0-9;]*[mGKHJA]/g, '')
+    .replace(/\\033\\[[0-9;]*[mGKHJA]/g, '')
+    .replace(/\\[[0-9;]*[mGKHJA]/g, '')
+    .replace(/\\[38;[0-9;]+m/g, '')
+    .replace(/\\[4;[0-9]+m/g, '')
+    .replace(/\\s+/g, ' ')
     .trim();
 };
 

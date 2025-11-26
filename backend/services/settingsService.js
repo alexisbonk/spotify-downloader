@@ -7,6 +7,7 @@ class SettingsService {
     this.settings = {
       downloadPath: '',
       autoRefreshQueue: false,
+      refreshInterval: 5000,
       plexUrl: '',
       spotifyClientId: process.env.SPOTIFY_CLIENT_ID || '',
       spotifyClientSecret: process.env.SPOTIFY_CLIENT_SECRET || '',

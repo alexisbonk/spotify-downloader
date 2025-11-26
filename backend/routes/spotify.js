@@ -128,14 +128,32 @@ router.get('/playlist-tracks/:playlistId', async (req, res) => {
   }
   logToFile(`[PLAYLIST-TRACKS] 🎵 Fetching tracks for playlist: ${playlistId}`, 'cyan');
   try {
-    const response = await axios.get(`https://api.spotify.com/v1/playlists/${playlistId}/tracks`, {
-      headers: { Authorization: `Bearer ${access_token}` }
-    });
-    const tracks = response.data.items || [];
-    logToFile(`[PLAYLIST-TRACKS] ✅ Fetched ${tracks.length} tracks from playlist`, 'green');
-    res.status(200).json(tracks);
+    let allTracks = [];
+    let url = `https://api.spotify.com/v1/playlists/${playlistId}/tracks`;
+    let fetchedCount = 0;
+    
+    while (url) {
+      const response = await axios.get(url, {
+        headers: { Authorization: `Bearer ${access_token}` }
+      });
+      
+      const tracks = response.data.items || [];
+      allTracks = allTracks.concat(tracks);
+      fetchedCount += tracks.length;
+      
+      logToFile(`[PLAYLIST-TRACKS] 📄 Fetched page with ${tracks.length} tracks (total: ${fetchedCount})`, 'cyan');
+      
+      url = response.data.next;
+      
+      if (url) {
+        await new Promise(resolve => setTimeout(resolve, 100));
+      }
+    }
+    
+    logToFile(`[PLAYLIST-TRACKS] ✅ Fetched ${allTracks.length} total tracks from playlist`, 'green');
+    res.status(200).json(allTracks);
   } catch (err) {
-    logToFile(`[PLAYLIST-TRACKS] 🛑 Failed to fetch tracks for playlist: ${playlistId}`, 'red');
+    logToFile(`[PLAYLIST-TRACKS] 🛑 Failed to fetch tracks for playlist: ${playlistId} - ${err.message}`, 'red');
     res.status(500).send('Failed to fetch playlist tracks');
   }
 });
