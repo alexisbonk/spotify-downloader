@@ -59,6 +59,31 @@
   white-space: nowrap;
 }
 
+.queue-details-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.queue-details-cancel {
+  background: none;
+  border: none;
+  color: #e74c3c;
+  font-size: 1.1em;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 50%;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.queue-details-cancel:hover {
+  color: #fff;
+  background: rgba(231, 76, 60, 0.2);
+}
+
 .queue-details-close {
   background: none;
   border: none;

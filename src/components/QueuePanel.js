@@ -6,8 +6,10 @@ import { useLanguage } from '../contexts/LanguageContext';
 
 const toPercent = (item) => {
   if (typeof item.totalTracks === 'number' && item.totalTracks > 0) {
-    const downloaded = Math.max(0, Math.min(item.totalTracks, item.downloadedTracks || 0));
-    return Math.min(100, Math.round((downloaded / item.totalTracks) * 100));
+    const processed = item.type === 'plex_sync' 
+      ? Math.max(0, Math.min(item.totalTracks, item.syncedTracks || 0))
+      : Math.max(0, Math.min(item.totalTracks, item.downloadedTracks || 0));
+    return Math.min(100, Math.round((processed / item.totalTracks) * 100));
   }
   if (typeof item.progress === 'number') {
     return Math.max(0, Math.min(100, Math.round(item.progress)));
@@ -18,16 +20,23 @@ const toPercent = (item) => {
 const isFullyComplete = (item, percent) => {
   if (item.status !== 'completed') return false;
   if (typeof item.totalTracks === 'number' && item.totalTracks > 0) {
-    return (item.downloadedTracks || 0) >= item.totalTracks;
+    const processed = item.type === 'plex_sync' 
+      ? (item.syncedTracks || 0)
+      : (item.downloadedTracks || 0);
+    return processed >= item.totalTracks;
   }
   return percent === 100;
 };
 
 const isPartiallyComplete = (item) => {
-  return item.status === 'completed' && 
-         typeof item.totalTracks === 'number' && 
-         item.totalTracks > 0 && 
-         (item.downloadedTracks || 0) < item.totalTracks;
+  if (item.status !== 'completed') return false;
+  if (typeof item.totalTracks === 'number' && item.totalTracks > 0) {
+    const processed = item.type === 'plex_sync' 
+      ? (item.syncedTracks || 0)
+      : (item.downloadedTracks || 0);
+    return processed < item.totalTracks;
+  }
+  return false;
 };
 
 const QueuePanel = ({
@@ -37,7 +46,9 @@ const QueuePanel = ({
   fetchQueue,
   handleCancelDownload,
   handleResetQueue,
-  isLoading
+  isLoading,
+  isBackendOnline = true,
+  connectionError = null
 }) => {
   const { t } = useLanguage();
   const [selectedQueueItemId, setSelectedQueueItemId] = useState(null);
@@ -69,6 +80,17 @@ const QueuePanel = ({
         ×
       </button>
       <h3>{t('queue')}</h3>
+      
+      {/* Connection Status Indicator */}
+      {!isBackendOnline && (
+        <div className="connection-status offline">
+          <div className="connection-status-indicator"></div>
+          <span className="connection-status-text">
+            {connectionError || 'Backend server is offline'}
+          </span>
+        </div>
+      )}
+      
       <ul className="queue-panel-list">
         {queue && queue.length > 0 ? (
           queue.map((item) => (
@@ -77,51 +99,51 @@ const QueuePanel = ({
                 <span className="queue-title">
                   <span className="queue-title-primary">{item.name}</span>
                   {typeof item.totalTracks === 'number' && item.totalTracks > 0 && (
-                    <span className="queue-title-secondary">({(item.downloadedTracks || 0)}/{item.totalTracks})</span>
+                    <span className="queue-title-secondary">
+                      ({item.type === 'plex_sync' ? (item.syncedTracks || 0) : (item.downloadedTracks || 0)}/{item.totalTracks})
+                    </span>
                   )}
                 </span>
                 <FaInfoCircle className="queue-info-icon" />
               </div>
-                {item.status === 'failed' && (
-                  <div className="queue-progress-bar-wrapper queue-status-failed">
-                    <span role="img" aria-label="failed" style={{color: '#e74c3c', fontWeight: 'bold', fontSize: '1.1em'}}>
-                      ❌ Failed
-                    </span>
-                  </div>
-                )}
-                {item.status === 'canceled' && (
-                  <div className="queue-progress-bar-wrapper queue-status-canceled">
-                    <span role="img" aria-label="canceled" style={{color: '#f1c40f', fontWeight: 'bold', fontSize: '1.1em'}}>
-                      🚫 Canceled
-                    </span>
-                  </div>
-                )}
                 {(() => {
                   const percent = toPercent(item);
-                  const showProgress = item.status === 'started' || item.status === 'completed';
+                  const showProgress = item.status === 'started' || item.status === 'completed' || item.status === 'failed' || item.status === 'canceled';
                   if (!showProgress) return null;
+                  
                   const done = isFullyComplete(item, percent);
                   const partial = isPartiallyComplete(item);
+                  const failed = item.status === 'failed';
+                  const canceled = item.status === 'canceled';
+                  
+                  let emoji = '⏳';
+                  let statusClass = '';
+                  
+                  if (failed) {
+                    emoji = '❌';
+                    statusClass = ' queue-progress-failed';
+                  } else if (canceled) {
+                    emoji = '🚫';
+                    statusClass = ' queue-progress-canceled';
+                  } else if (done) {
+                    emoji = '✅';
+                    statusClass = ' queue-progress-complete';
+                  } else if (partial) {
+                    emoji = '⚠️';
+                    statusClass = ' queue-progress-partial';
+                  }
+                  
                   return (
-                    <div className={`queue-progress-bar-wrapper${done ? ' queue-progress-complete' : ''}${partial ? ' queue-progress-partial' : ''}`}>
+                    <div className={`queue-progress-bar-wrapper${statusClass}`}>
                       <div className="queue-progress-bar">
-                        <div className={`queue-progress-bar-fill${partial ? ' partial' : ''}`} style={{width: `${percent}%`}}></div>
+                        <div className={`queue-progress-bar-fill${partial ? ' partial' : ''}${failed ? ' failed' : ''}${canceled ? ' canceled' : ''}`} style={{width: failed || canceled ? '100%' : `${percent}%`}}></div>
                       </div>
-                      <span className={`queue-progress-bar-label${done ? ' complete' : ''}${partial ? ' partial' : ''}`}>
-                        {done ? '✅' : partial ? '⚠️' : '⏳'}
+                      <span className={`queue-progress-bar-label${done ? ' complete' : ''}${partial ? ' partial' : ''}${failed ? ' failed' : ''}${canceled ? ' canceled' : ''}`}>
+                        {emoji}
                       </span>
                     </div>
                   );
                 })()}
-              {item.status === "started" && (
-                <button
-                  className="queue-cancel queue-cancel-hover"
-                  onClick={() => handleCancelDownload(item.id)}
-                  disabled={isLoading}
-                >
-                  {t('cancel')}
-                </button>
-              )}
             </li>
           ))
         ) : (
@@ -149,6 +171,7 @@ const QueuePanel = ({
         isOpen={isDetailsModalOpen}
         onClose={closeDetailsModal}
         queueItem={selectedQueueItem}
+        onCancelDownload={handleCancelDownload}
       />
     </div>
   );

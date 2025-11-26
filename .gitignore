@@ -32,6 +32,10 @@ backend/.env.*
 # nested dependencies
 backend/node_modules
 
+# package-lock files
+package-lock.json
+backend/package-lock.json
+
 # backend logs
 backend/data/queue.json
 backend/data/settings.json

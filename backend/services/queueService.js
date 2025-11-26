@@ -65,6 +65,75 @@ class QueueService {
   }
 
   startQueueItem(queueItem) {
+    if (queueItem.type === 'plex_sync') {
+      this.startPlexSyncItem(queueItem);
+    } else {
+      this.startDownloadItem(queueItem);
+    }
+  }
+
+  startPlexSyncItem(queueItem) {
+    queueItem.status = 'started';
+    queueItem.progress = 0;
+    queueItem.syncedTracks = 0;
+    queueItem.failedTracks = [];
+
+    this.addLogToQueue(queueItem, `Starting Plex sync of ${queueItem.name}`, 'info');
+    logToFile(`[PLEX_SYNC] ▶️  Starting sync → ${queueItem.name}`, 'blue');
+
+    this.processPlexSync(queueItem)
+      .then(() => {
+        queueItem.status = 'completed';
+        queueItem.progress = 100;
+        this.addLogToQueue(queueItem, 'Plex sync completed successfully!', 'success');
+        logToFile(`[PLEX_SYNC] ✅ Completed → ${queueItem.name}`, 'green');
+      })
+      .catch((error) => {
+        queueItem.status = 'failed';
+        this.addLogToQueue(queueItem, `Plex sync failed: ${error.message}`, 'error');
+        logToFile(`[PLEX_SYNC] 🛑 Failed → ${queueItem.name}: ${error.message}`, 'red');
+      })
+      .finally(() => {
+        this.saveQueue();
+        this.processQueue();
+      });
+  }
+
+  async processPlexSync(queueItem) {
+    const syncPlexPlaylist = require('./syncPlexPlaylist');
+    
+    try {
+      const result = await syncPlexPlaylist({
+        spotifyTracks: queueItem.spotifyTracks,
+        playlistTitle: queueItem.name,
+        plexConfig: {
+          baseUrl: queueItem.plexConfig.url,
+          token: queueItem.plexConfig.token,
+          serverId: queueItem.plexConfig.serverId
+        }
+      });
+
+      queueItem.syncedTracks = result.totalFound || 0;
+      queueItem.progress = queueItem.totalTracks > 0 
+        ? Math.round((queueItem.syncedTracks / queueItem.totalTracks) * 100)
+        : 100;
+
+      queueItem.failedTracks = result.notFound.map(track => ({
+        name: `${track.title} - ${track.artist}`,
+        reason: track.reason
+      }));
+
+      this.addLogToQueue(queueItem, `${queueItem.syncedTracks}/${queueItem.totalTracks} tracks synced to Plex`, 'info');
+      
+      if (result.foundTracks.length > 0) {
+        this.addLogToQueue(queueItem, `Successfully synced: ${result.foundTracks.map(t => `${t.title} - ${t.artist}`).join(', ')}`, 'success');
+      }
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  startDownloadItem(queueItem) {
     const settings = require('./settingsService').getSettings();
     queueItem.status = 'started';
     queueItem.progress = 0;
@@ -76,8 +145,8 @@ class QueueService {
     logToFile(`[DOWNLOAD] ▶️  Starting download → ${queueItem.name}`, 'blue');
 
     let outputPath = path.join(settings.downloadPath, '{artist}', '{album}', '{title}');
+    
     const parentDir = path.dirname(outputPath.replace(/\{.*?\}/g, 'temp'));
- 
     if (!fs.existsSync(parentDir)) {
       fs.mkdirSync(parentDir, { recursive: true });
     }
@@ -99,10 +168,14 @@ class QueueService {
       args.push('--client-id', settings.spotifyClientId);
       args.push('--client-secret', settings.spotifyClientSecret);
     }
-
-    this.addLogToQueue(queueItem, `Command: spotdl ${args.join(' ')}`, 'info');
-
-    const spotdl = spawn('spotdl', args);
+    
+    const spotdl = spawn('spotdl', args, {
+      env: {
+        ...process.env,
+        PYTHONIOENCODING: 'utf-8',
+        PYTHONLEGACYWINDOWSSTDIO: '0'
+      }
+    });
     queueItem.process = spotdl;
 
     let lastProgress = -1;

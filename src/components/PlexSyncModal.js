@@ -1,14 +1,13 @@
 import React from 'react';
-import { FaDownload, FaTimes, FaExclamationTriangle } from 'react-icons/fa';
+import { FaLink, FaTimes, FaExclamationTriangle } from 'react-icons/fa';
 import '../styles/ConfirmationModal.css';
 import { useLanguage } from '../contexts/LanguageContext';
 
-const ConfirmationModal = ({ 
+const PlexSyncModal = ({ 
   isOpen, 
   onClose, 
   onConfirm, 
-  albumCount,
-  showWarning = false
+  playlistName
 }) => {
   const { t } = useLanguage();
   
@@ -19,8 +18,8 @@ const ConfirmationModal = ({
       <div className="modal-content" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
           <h3 className="modal-title">
-            <FaDownload className="modal-icon" />
-            {t('downloadAllAlbums')}
+            <FaLink className="modal-icon" style={{ color: '#E5A00D' }} />
+            {t('syncPlaylistToPlex')}
           </h3>
           <button className="modal-close-btn" onClick={onClose}>
             <FaTimes />
@@ -28,23 +27,23 @@ const ConfirmationModal = ({
         </div>
         
         <div className="modal-body">
-          <p className="modal-message">{t('confirmDownloadAllAlbums')}</p>
+          <p className="modal-message">
+            {t('confirmSyncPlaylistToPlex')}
+          </p>
           
-          {albumCount && (
+          {playlistName && (
             <div className="album-count-badge">
-              <strong>{albumCount} {t('albums')}</strong> {t('willBeDownloaded')}
+              <strong>{playlistName}</strong>
             </div>
           )}
           
-          {showWarning && (
-            <div className="modal-warning">
-              <FaExclamationTriangle className="warning-icon" />
-              <div className="warning-content">
-                <strong>{t('attention')}</strong>
-                <p>{t('downloadTimeWarning')}</p>
-              </div>
+          <div className="modal-warning">
+            <FaExclamationTriangle className="warning-icon" />
+            <div className="warning-content">
+              <strong>{t('attention')}</strong>
+              <p>This action requires that tracks are already available in your local Plex library.</p>
             </div>
-          )}
+          </div>
         </div>
         
         <div className="modal-footer">
@@ -52,8 +51,8 @@ const ConfirmationModal = ({
             {t('cancel')}
           </button>
           <button className="modal-btn modal-btn-confirm" onClick={onConfirm}>
-            <FaDownload />
-            {t('download')}
+            <FaLink />
+            {t('syncPlaylistToPlex')}
           </button>
         </div>
       </div>
@@ -61,4 +60,4 @@ const ConfirmationModal = ({
   );
 };
 
-export default ConfirmationModal;
+export default PlexSyncModal;

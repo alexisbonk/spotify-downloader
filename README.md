@@ -59,37 +59,120 @@ Check out their project and give them a star!
 
 ## 🚀 Prerequisites
 
-- Node.js (v14 or higher)
+- Node.js (v14 or higher) **OR** Docker/Docker Compose
 - A Spotify developer application (Client ID/Secret)
-- **spotDL** installed on the system
-- **yt-dlp** (usually installed with spotDL)
+
+---
+
+## 🐳 Docker Installation (Recommended)
+
+The easiest way to run Spotify Downloader is with Docker. No need to install Node.js, spotDL, or other dependencies!
+
+### 1. Clone the repository
+```bash
+$ git clone https://github.com/yourname/spotify-downloader.git
+$ cd spotify-downloader
+```
+
+### 2. Configure Environment Variables
+
+Create a `.env` file at the project root with your Spotify credentials:
+```bash
+cp .env.example .env
+```
+
+Edit the `.env` file with your Spotify Developer credentials:
+```dotenv
+SPOTIFY_CLIENT_ID=xxxxxxxxxxxxxxxxxxxxx
+SPOTIFY_CLIENT_SECRET=xxxxxxxxxxxxxxxxxxxxx
+```
+
+Optional variables:
+```dotenv
+PLEX_TOKEN=your_plex_token
+PLEX_SERVER_ID=your_plex_server_id
+```
+
+### 3. Start with Docker Compose
+
+**For production:**
+```bash
+$ docker-compose up -d
+```
+
+**For development (with hot reload):**
+```bash
+$ docker-compose -f docker-compose.dev.yml up -d
+```
+
+Access the app at: http://localhost:3535
+
+### 4. Fichiers Téléchargés
+
+Les fichiers sont enregistrés directement dans le volume monté depuis votre système hôte. Vous pouvez y accéder directement à l'emplacement configuré dans votre fichier `.env` (par défaut : `/Volumes/Main volume/MUSIC`).
+
+Pour modifier l'emplacement de téléchargement, mettez à jour la variable `DOWNLOAD_PATH` dans votre fichier `.env`.
+
+### Docker Commands
+
+| Command | Description |
+|---------|-------------|
+| `docker-compose up -d` | Start production container |
+| `docker-compose down` | Stop and remove container |
+| `docker-compose logs -f` | View logs |
+| `docker-compose exec spotify-downloader sh` | Access container shell |
+| `docker-compose pull` | Pull latest image |
+| `docker-compose build --no-cache` | Rebuild from scratch |
+
+---
+
+## 💻 Manual Installation
+
+If you prefer to install without Docker:
 
 ### 1. Clone & install
 ```bash
 $ git clone https://github.com/yourname/spotify-downloader.git
 $ cd spotify-downloader
-$ npm install
-$ cd backend && npm install && cd ..
+$ npm run install-all
 ```
 
-### 2. Configure env
-Create a `.env` at project root:
+### 2. Install spotDL and yt-dlp
+```bash
+$ pip install spotdl==4.4.3 yt-dlp
+```
+
+### 3. Configure Spotify App & Environment Variables
+
+#### Spotify Developer Application Setup
+1. Créez une application sur le [Spotify Developer Dashboard](https://developer.spotify.com/dashboard)
+2. Dans les paramètres de l'application, ajoutez le redirect URI suivant :
+   ```
+   http://127.0.0.1:4420/callback
+   ```
+
+#### Environment Variables
+Create a `.env` at project root with **only** these required variables:
 ```dotenv
 SPOTIFY_CLIENT_ID=xxxxxxxxxxxxxxxxxxxxx
 SPOTIFY_CLIENT_SECRET=xxxxxxxxxxxxxxxxxxxxx
+```
+
+Variables optionnelles :
+```dotenv
 DOWNLOAD_PATH=/Volumes/Main\ volume/MUSIC
-PORT=4420
+PORT=8585
 ```
 
 #### Frontend port configuration
 
-To change the port used by the React frontend (default is 3000), create a `.env` file at the root of the project and add:
+To change the port used by the React frontend (default is 3535), create a `.env` file at the root of the project and add:
 
 ```
-PORT=3420
+PORT=3535
 ```
 
-This will start the React frontend on port 3420 instead of 3000.
+This will start the React frontend on port 3535.
 
 ## 🛠️ Tech Stack
 
@@ -113,7 +196,7 @@ This will start the React frontend on port 3420 instead of 3000.
 $ npm run dev
 ```
 This will start both frontend (React) and backend (Express) servers concurrently.
-Navigate to `http://localhost:3000` (or your configured port) and authenticate with Spotify.
+Navigate to `http://localhost:3535` (or your configured port) and authenticate with Spotify.
 
 ### 4. Production build
 ```bash
@@ -123,7 +206,12 @@ $ npm run build
 ## ⚙️ Available NPM scripts
 | Command | Description |
 |---------|-------------|
+| `npm run install-all` | Install dependencies for both frontend and backend |
 | `npm run dev` | Start both frontend and backend in development mode |
+| `npm run dev-simple` | Start frontend and backend concurrently |
+| `npm run dev-frontend` | Start React frontend only |
+| `npm run dev-backend` | Start Express server only |
+| `npm run server` | Start Express server |
 | `npm start` | Start React frontend only |
 | `npm run build` | Create optimized React build |
 | `npm test` | Run React tests |

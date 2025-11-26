@@ -61,7 +61,7 @@ export function useSettings() {
   const [plexUrl, setPlexUrl] = useState('');
   const [spotifyClientId, setSpotifyClientId] = useState('');
   const [spotifyClientSecret, setSpotifyClientSecret] = useState('');
-  const [spotifyRedirectUri, setSpotifyRedirectUri] = useState('http://127.0.0.1:4420/callback');
+  const [spotifyRedirectUri, setSpotifyRedirectUri] = useState('http://127.0.0.1:3005/callback');
   const [plexToken, setPlexToken] = useState('');
   const [plexServerId, setPlexServerId] = useState('');
   return { 

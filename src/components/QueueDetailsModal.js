@@ -1,10 +1,10 @@
 import React from "react";
-import { FaTimes, FaCheckCircle, FaExclamationCircle, FaClock, FaPlay } from "react-icons/fa";
+import { FaTimes, FaCheckCircle, FaExclamationCircle, FaClock, FaPlay, FaStop } from "react-icons/fa";
 import { cleanAnsiCodes } from "../utils/ansiCleaner";
 import "../styles/QueueDetailsModal.css";
 import { useLanguage } from '../contexts/LanguageContext';
 
-const QueueDetailsModal = ({ isOpen, onClose, queueItem }) => {
+const QueueDetailsModal = ({ isOpen, onClose, queueItem, onCancelDownload }) => {
   const { t } = useLanguage();
   if (!isOpen || !queueItem) return null;
 
@@ -44,8 +44,16 @@ const QueueDetailsModal = ({ isOpen, onClose, queueItem }) => {
 
   const isPartiallyComplete = queueItem.status === 'completed' && 
     queueItem.totalTracks > 0 && 
-    queueItem.downloadedTracks < queueItem.totalTracks;
+    ((queueItem.type === 'plex_sync' && queueItem.syncedTracks < queueItem.totalTracks) ||
+     (queueItem.type !== 'plex_sync' && queueItem.downloadedTracks < queueItem.totalTracks));
 
+  const canCancel = queueItem.status === 'started' || queueItem.status === 'queued';
+
+  const handleCancel = () => {
+    if (onCancelDownload && canCancel) {
+      onCancelDownload(queueItem.id);
+    }
+  };
 
   return (
     <div className="queue-details-overlay" onClick={onClose}>
@@ -62,9 +70,20 @@ const QueueDetailsModal = ({ isOpen, onClose, queueItem }) => {
             )}
             <h3>{queueItem.name}</h3>
           </div>
-          <button className="queue-details-close" onClick={onClose}>
-            <FaTimes />
-          </button>
+          <div className="queue-details-header-actions">
+            {canCancel && (
+              <button 
+                className="queue-details-cancel" 
+                onClick={handleCancel}
+                title={t('cancel')}
+              >
+                <FaStop />
+              </button>
+            )}
+            <button className="queue-details-close" onClick={onClose}>
+              <FaTimes />
+            </button>
+          </div>
         </div>
         
         <div className="queue-details-content">
@@ -85,31 +104,54 @@ const QueueDetailsModal = ({ isOpen, onClose, queueItem }) => {
 
             {queueItem.totalTracks > 0 && (
               <div className="stat-item">
-                <label>{t('downloadSummary')}:</label>
+                <label>
+                  {queueItem.type === 'plex_sync' ? t('syncSummary') : t('downloadSummary')}:
+                </label>
                 <span>
-                  <span className={queueItem.downloadedTracks < queueItem.totalTracks ? 'partial' : 'complete'}>
-                    {queueItem.downloadedTracks}/{queueItem.totalTracks} {t('tracksDownloaded')}
+                  <span className={
+                    (queueItem.type === 'plex_sync' ? queueItem.syncedTracks : queueItem.downloadedTracks) < queueItem.totalTracks 
+                      ? 'partial' 
+                      : 'complete'
+                  }>
+                    {queueItem.type === 'plex_sync' ? (queueItem.syncedTracks || 0) : (queueItem.downloadedTracks || 0)}/{queueItem.totalTracks} 
+                    {queueItem.type === 'plex_sync' ? t('tracksSynced') : t('tracksDownloaded')}
                   </span>
-                  {queueItem.status !== 'started' && queueItem.totalTracks - queueItem.downloadedTracks > 0 && (
+                  {queueItem.status !== 'started' && queueItem.totalTracks - (queueItem.type === 'plex_sync' ? (queueItem.syncedTracks || 0) : (queueItem.downloadedTracks || 0)) > 0 && (
                     <span className="failed-count">
-                      {' - '}{queueItem.totalTracks - queueItem.downloadedTracks} {t('failures')}
+                      {' - '}{queueItem.totalTracks - (queueItem.type === 'plex_sync' ? (queueItem.syncedTracks || 0) : (queueItem.downloadedTracks || 0))} {t('failures')}
                     </span>
                   )}
                 </span>
               </div>
             )}
 
-            <div className="stat-item">
-              <label>{t('spotifyUrl')}:</label>
-              <a 
-                href={queueItem.url} 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="spotify-link"
-              >
-                {t('openInSpotify')}
-              </a>
-            </div>
+            {queueItem.type === 'plex_sync' && queueItem.plexConfig && (
+              <div className="stat-item">
+                <label>{t('plexServer')}:</label>
+                <a 
+                  href={queueItem.plexConfig.url} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="plex-link"
+                >
+                  {t('openInPlex')}
+                </a>
+              </div>
+            )}
+
+            {queueItem.url && queueItem.type !== 'plex_sync' && (
+              <div className="stat-item">
+                <label>{t('spotifyUrl')}:</label>
+                <a 
+                  href={queueItem.url} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="spotify-link"
+                >
+                  {t('openInSpotify')}
+                </a>
+              </div>
+            )}
 
             {queueItem.outputPath && (
               <div className="stat-item">

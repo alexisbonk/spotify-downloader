@@ -1,0 +1,29 @@
+FROM node:23-alpine
+
+WORKDIR /app
+
+RUN apk add --no-cache \
+  python3 \
+  py3-pip \
+  ffmpeg \
+  && rm -rf /var/cache/apk/*
+
+RUN pip3 install --no-cache-dir --break-system-packages spotdl==4.4.3 yt-dlp
+
+COPY backend/package*.json ./
+RUN npm ci --only=production
+
+COPY backend/ ./
+
+RUN mkdir -p /app/downloads && \
+  chown -R node:node /app
+
+USER node
+
+EXPOSE 8585
+
+ENV NODE_ENV=production
+ENV PORT=8585
+ENV DOWNLOAD_PATH=/app/downloads
+
+CMD ["node", "server.js"]

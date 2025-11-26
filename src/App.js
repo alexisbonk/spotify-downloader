@@ -8,7 +8,7 @@ import { IconContext } from 'react-icons';
 import Header from './components/Header';
 import Sidebar from './components/Sidebar';
 import SettingsModal from './components/SettingsModal';
-import { LanguageProvider } from './contexts/LanguageContext';
+import { LanguageProvider, useLanguage } from './contexts/LanguageContext';
 
 import axios from 'axios';
 import Footer from './components/Footer';
@@ -22,10 +22,17 @@ import useQueue from './hooks/useQueue';
 
 const SEARCH_STATE_KEY = 'spotifyDownloaderSearchState';
 
-function App() {
+function AppContent() {
+  const { t } = useLanguage();
   const [searchMode, setSearchMode] = React.useState('playlist');
-  const [autoRefreshQueue, setAutoRefreshQueue] = React.useState(true);
-  const { queue, isLoading: isQueueLoading, fetchQueue } = useQueue(5000, autoRefreshQueue);
+  
+  const [autoRefreshQueue, setAutoRefreshQueue] = React.useState(() => {
+    const saved = localStorage.getItem('autoRefreshQueue');
+    return saved !== null ? JSON.parse(saved) : true;
+  });
+  
+  const [refreshInterval, setRefreshInterval] = React.useState(5000);
+  const { queue, isLoading: isQueueLoading, isBackendOnline, connectionError, fetchQueue } = useQueue(refreshInterval, autoRefreshQueue);
   const { searchQuery, setSearchQuery, searchType, setSearchType, trackResults, setTrackResults, albumResults, setAlbumResults, playlistResults, setPlaylistResults, artistResults, setArtistResults, selectedArtistAlbums, setSelectedArtistAlbums, isLoading, setIsLoading, feedbackMessage, setFeedbackMessage } = useSpotifySearch();
   
   const { showSettings, setShowSettings, downloadPath, setDownloadPath, plexUrl, setPlexUrl, spotifyClientId, setSpotifyClientId, spotifyClientSecret, setSpotifyClientSecret, spotifyRedirectUri, setSpotifyRedirectUri, plexToken, setPlexToken, plexServerId, setPlexServerId } = useSettings();
@@ -63,8 +70,13 @@ function App() {
       if (res.data.downloadPath !== undefined) {
         setDownloadPath(res.data.downloadPath);
       }
-      if (res.data.autoRefreshQueue !== undefined) {
-        setAutoRefreshQueue(res.data.autoRefreshQueue !== false);
+      if (res.data.autoRefreshQueue !== undefined && autoRefreshQueue === true) {
+        if (res.data.autoRefreshQueue === false) {
+          setAutoRefreshQueue(false);
+        }
+      }
+      if (res.data.refreshInterval !== undefined) {
+        setRefreshInterval(res.data.refreshInterval);
       }
       if (res.data.plexUrl !== undefined) {
         setPlexUrl(res.data.plexUrl || '');
@@ -76,7 +88,7 @@ function App() {
         setSpotifyClientSecret(res.data.spotifyClientSecret || '');
       }
       if (res.data.spotifyRedirectUri !== undefined) {
-        setSpotifyRedirectUri(res.data.spotifyRedirectUri || 'http://127.0.0.1:4420/callback');
+        setSpotifyRedirectUri(res.data.spotifyRedirectUri || 'http://127.0.0.1:8585/callback');
       }
       if (res.data.plexToken !== undefined) {
         setPlexToken(res.data.plexToken || '');
@@ -84,8 +96,12 @@ function App() {
       if (res.data.plexServerId !== undefined) {
         setPlexServerId(res.data.plexServerId || '');
       }
+    }).catch(err => {
+      if (err.code !== 'ERR_NETWORK' && err.code !== 'ECONNABORTED') {
+        console.error('Error fetching settings:', err);
+      }
     });
-  }, [setAccessToken, setDownloadPath, setAutoRefreshQueue, setPlexUrl, setSpotifyClientId, setSpotifyClientSecret, setSpotifyRedirectUri, setPlexToken, setPlexServerId, setSearchQuery, setSearchType, setSearchMode, setTrackResults, setAlbumResults, setPlaylistResults, setArtistResults]);
+  }, [setAccessToken, setDownloadPath, autoRefreshQueue, setAutoRefreshQueue, setPlexUrl, setSpotifyClientId, setSpotifyClientSecret, setSpotifyRedirectUri, setPlexToken, setPlexServerId, setSearchQuery, setSearchType, setSearchMode, setTrackResults, setAlbumResults, setPlaylistResults, setArtistResults]);
 
   const [isHydrated, setIsHydrated] = React.useState(false);
 
@@ -113,6 +129,10 @@ function App() {
     setIsHydrated(true);
   }, []);
 
+  useEffect(() => {
+    localStorage.setItem('autoRefreshQueue', JSON.stringify(autoRefreshQueue));
+  }, [autoRefreshQueue]);
+
   const activeSearchValue =
     searchType === 'playlist' && searchMode === 'friend' ? friendSearchQuery : searchQuery;
 
@@ -135,11 +155,13 @@ function App() {
       }).catch(err => {
         if (err.response && err.response.status === 401) {
           handleTokenExpiry();
+        } else if (err.code === 'ERR_NETWORK' || err.code === 'ECONNABORTED') {
+          setFeedbackMessage('Backend server is offline. Please start the backend server.');
         } else {
           console.error("Error downloading: ", err);
+          setFeedbackMessage('Error starting download.');
         }
         setIsLoading(false);
-        setFeedbackMessage('Error starting download.');
       });
     }
   };
@@ -168,8 +190,12 @@ function App() {
         setPreviewTracks(res.data || []);
       }
     } catch (err) {
-      console.error('Error fetching preview tracks: ', err);
-      setPreviewTracks([]);
+      if (err.code === 'ERR_NETWORK' || err.code === 'ECONNABORTED') {
+        setPreviewTracks([]);
+      } else {
+        console.error('Error fetching preview tracks: ', err);
+        setPreviewTracks([]);
+      }
     } finally {
       setIsPreviewLoading(false);
     }
@@ -196,9 +222,14 @@ function App() {
           setFeedbackMessage(playlists.length === 0 ? 'No playlists found for this user.' : null);
         })
         .catch((error) => {
-          console.error('Error fetching friend playlists:', error);
-          setPlaylistResults([]);
-          setFeedbackMessage('Unable to fetch playlists for this user.');
+          if (error.code === 'ERR_NETWORK' || error.code === 'ECONNABORTED') {
+            setPlaylistResults([]);
+            setFeedbackMessage('Backend server is offline. Please start the backend server.');
+          } else {
+            console.error('Error fetching friend playlists:', error);
+            setPlaylistResults([]);
+            setFeedbackMessage('Unable to fetch playlists for this user.');
+          }
         })
         .finally(finishLoading);
       return;
@@ -221,17 +252,19 @@ function App() {
       .catch(err => {
         if (err.response && err.response.status === 401) {
           handleTokenExpiry();
+        } else if (err.code === 'ERR_NETWORK' || err.code === 'ECONNABORTED') {
+          setFeedbackMessage('Backend server is offline. Please start the backend server.');
         } else {
           console.error("Error searching: ", err);
+          setFeedbackMessage('Error during search.');
         }
-        setFeedbackMessage('Error during search.');
       })
       .finally(finishLoading);
   };
 
   const handleTokenExpiry = () => {
     setAccessToken('');
-    window.location.href = 'http://localhost:4420/auth';
+    window.location.href = 'http://127.0.0.1:8585/auth';
   };
 
   const handleArtistSelect = (artistId) => {
@@ -246,11 +279,13 @@ function App() {
       .catch(err => {
         if (err.response && err.response.status === 401) {
           handleTokenExpiry();
+        } else if (err.code === 'ERR_NETWORK' || err.code === 'ECONNABORTED') {
+          setFeedbackMessage('Backend server is offline. Please start the backend server.');
         } else {
           console.error("Error fetching albums: ", err);
+          setFeedbackMessage('Error fetching albums.');
         }
         setIsLoading(false);
-        setFeedbackMessage('Error fetching albums.');
       });
   };
 
@@ -263,11 +298,13 @@ function App() {
     }).catch(err => {
       if (err.response && err.response.status === 401) {
         handleTokenExpiry();
+      } else if (err.code === 'ERR_NETWORK' || err.code === 'ECONNABORTED') {
+        setFeedbackMessage('Backend server is offline. Please start the backend server.');
       } else {
         console.error("Error canceling download: ", err);
+        setFeedbackMessage('Error cancelling download.');
       }
       setIsLoading(false);
-      setFeedbackMessage('Error cancelling download.');
     });
   };
 
@@ -277,7 +314,7 @@ function App() {
     try {
       let tracks = Array.isArray(playlist.tracks) ? playlist.tracks : null;
       if (!tracks) {
-        const res = await axios.get(`http://localhost:4420/playlist-tracks/${playlist.id}?access_token=${accessToken}`);
+        const res = await axios.get(`http://localhost:8585/playlist-tracks/${playlist.id}?access_token=${accessToken}`);
         tracks = res.data.map(item => {
           const t = item.track || item;
           return {
@@ -286,7 +323,7 @@ function App() {
           };
         });
       }
-      await axios.post('http://localhost:4420/sync-plex-playlist', {
+      await axios.post('http://localhost:8585/sync-plex-playlist', {
         spotifyTracks: tracks,
         playlistTitle: playlist.name
       });
@@ -300,14 +337,18 @@ function App() {
 
 
   const handlePathChange = () => {
-    return spotifyApi.updateSettings(downloadPath, autoRefreshQueue, plexUrl, spotifyClientId, spotifyClientSecret, spotifyRedirectUri, plexToken, plexServerId)
+    return spotifyApi.updateSettings(downloadPath, undefined, refreshInterval, plexUrl, spotifyClientId, spotifyClientSecret, spotifyRedirectUri, plexToken, plexServerId)
       .then(() => {
         setFeedbackMessage('Settings saved.');
         return { ok: true };
       })
       .catch(err => {
-        console.error("Error saving settings: ", err);
-        setFeedbackMessage('Error saving settings.');
+        if (err.code === 'ERR_NETWORK' || err.code === 'ECONNABORTED') {
+          setFeedbackMessage('Backend server is offline. Settings not saved.');
+        } else {
+          console.error("Error saving settings: ", err);
+          setFeedbackMessage('Error saving settings.');
+        }
         throw err;
       });
   };
@@ -322,11 +363,13 @@ function App() {
       }).catch(err => {
         if (err.response && err.response.status === 401) {
           handleTokenExpiry();
+        } else if (err.code === 'ERR_NETWORK' || err.code === 'ECONNABORTED') {
+          setFeedbackMessage('Backend server is offline. Queue not reset.');
         } else {
           console.error("Error resetting queue: ", err);
+          setFeedbackMessage('Error resetting queue.');
         }
         setIsLoading(false);
-        setFeedbackMessage('Error resetting queue.');
       });
     }
   };
@@ -336,14 +379,13 @@ function App() {
   };
 
   return (
-    <LanguageProvider>
-      <IconContext.Provider value={{ size: '1.3em' }}>
+    <IconContext.Provider value={{ size: '1.3em' }}>
       {!accessToken ? (
         <div className="spotify-login-bg">
           <div className="spotify-login-card">
             <FaSpotify size={38} color="#1DB954" />
             <h2>Connect to Spotify</h2>
-            <a href="http://localhost:4420/auth" className="spotify-btn-main">
+            <a href="http://localhost:8585/auth" className="spotify-btn-main">
               Login with Spotify
             </a>
           </div>
@@ -374,6 +416,8 @@ function App() {
                   setPlexUrl={setPlexUrl}
                   autoRefreshQueue={autoRefreshQueue}
                   setAutoRefreshQueue={setAutoRefreshQueue}
+                  refreshInterval={refreshInterval}
+                  setRefreshInterval={setRefreshInterval}
                   spotifyClientId={spotifyClientId}
                   setSpotifyClientId={setSpotifyClientId}
                   spotifyClientSecret={spotifyClientSecret}
@@ -402,6 +446,7 @@ function App() {
                 handleSyncPlexPlaylist={handleSyncPlexPlaylist}
                 handleOpenPreview={handlePreview}
                 isLoading={isLoading}
+                t={t}
               />
               {showPreview && (
                 <AlbumPreviewModal
@@ -433,12 +478,21 @@ function App() {
                 handleCancelDownload={handleCancelDownload}
                 handleResetQueue={handleResetQueue}
                 isLoading={isQueueLoading}
+                isBackendOnline={isBackendOnline}
+                connectionError={connectionError}
               />
             </div>
           </main>
         </div>
       )}
-      </IconContext.Provider>
+    </IconContext.Provider>
+  );
+}
+
+function App() {
+  return (
+    <LanguageProvider>
+      <AppContent />
     </LanguageProvider>
   );
 }

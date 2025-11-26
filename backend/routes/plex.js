@@ -6,6 +6,10 @@ const syncPlexPlaylist = require('../services/syncPlexPlaylist');
 
 router.post('/sync-plex-playlist', async (req, res) => {
   const settings = req.app.locals.settings;
+  const downloadQueue = req.app.locals.downloadQueue;
+  const saveQueue = req.app.locals.saveQueue;
+  const processQueue = req.app.locals.processQueue;
+  
   logToFile(`[PLEX_SYNC] Appel /sync-plex-playlist`);
   const { spotifyTracks, playlistTitle } = req.body;
   const plexUrl = settings.plexUrl || process.env.REACT_APP_PLEX_URL || process.env.PLEX_URL;
@@ -35,15 +39,35 @@ router.post('/sync-plex-playlist', async (req, res) => {
   }
 
   try {
-    logToFile(`[PLEX_SYNC] Début de la synchronisation pour "${playlistTitle}" avec ${spotifyTracks.length} pistes`);
-    const result = await syncPlexPlaylist(spotifyTracks, playlistTitle, plexUrl, plexToken, plexServerId);
+    const queueItem = {
+      id: Date.now().toString(),
+      type: 'plex_sync',
+      name: playlistTitle,
+      status: 'queued',
+      progress: 0,
+      createdAt: new Date().toISOString(),
+      logs: [],
+      totalTracks: spotifyTracks.length,
+      syncedTracks: 0,
+      failedTracks: [],
+      plexConfig: {
+        url: plexUrl,
+        token: plexToken,
+        serverId: plexServerId
+      },
+      spotifyTracks: spotifyTracks
+    };
+
+    downloadQueue.push(queueItem);
+    saveQueue();
+    processQueue();
     
-    logToFile(`[PLEX_SYNC] Synchronisation terminée avec succès`);
-    res.json(result);
+    logToFile(`[PLEX_SYNC] 📥 Synchronisation ajoutée à la queue → ${playlistTitle} (${spotifyTracks.length} pistes)`, 'blue');
+    res.status(200).json({ message: 'Plex sync queued', id: queueItem.id });
   } catch (error) {
-    logToFile(`[PLEX_SYNC] Erreur lors de la synchronisation: ${error.message}`);
+    logToFile(`[PLEX_SYNC] Erreur lors de l\'ajout à la queue: ${error.message}`);
     res.status(500).json({ 
-      error: 'Erreur lors de la synchronisation avec Plex', 
+      error: 'Erreur lors de l\'ajout de la synchronisation à la queue', 
       message: error.message 
     });
   }

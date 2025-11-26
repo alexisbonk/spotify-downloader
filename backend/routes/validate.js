@@ -13,9 +13,7 @@ router.post('/validate-path', (req, res) => {
   }
 
   try {
-    const absolutePath = path.isAbsolute(pathToValidate) 
-      ? pathToValidate 
-      : path.resolve(process.cwd(), pathToValidate);
+    const absolutePath = path.normalize(pathToValidate);
 
     if (!fs.existsSync(absolutePath)) {
       logToFile(`[VALIDATE-PATH] ❌ Chemin non trouvé: ${absolutePath}`, 'red');

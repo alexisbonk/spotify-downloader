@@ -5,12 +5,13 @@ class SettingsService {
   constructor(settingsFile) {
     this.settingsFile = settingsFile;
     this.settings = {
-      downloadPath: '',
+      downloadPath: process.env.DOWNLOAD_PATH || '',
       autoRefreshQueue: false,
+      refreshInterval: 5000,
       plexUrl: '',
       spotifyClientId: process.env.SPOTIFY_CLIENT_ID || '',
       spotifyClientSecret: process.env.SPOTIFY_CLIENT_SECRET || '',
-      spotifyRedirectUri: 'http://127.0.0.1:4420/callback',
+      spotifyRedirectUri: 'http://127.0.0.1:3005/callback',
       plexToken: process.env.REACT_APP_PLEX_TOKEN || process.env.PLEX_TOKEN || '',
       plexServerId: process.env.PLEX_SERVER_ID || ''
     };
