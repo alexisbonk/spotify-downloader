@@ -246,7 +246,7 @@ const SettingsModal = ({ downloadPath, setDownloadPath, plexUrl, setPlexUrl, aut
                   type="text"
                   value={spotifyRedirectUri}
                   onChange={(e) => setSpotifyRedirectUri(e.target.value)}
-                  placeholder="http://127.0.0.1:3005/callback"
+                  placeholder="http://127.0.0.1:8585/callback"
                 />
               </label>
               <label className="settings-modal-field">

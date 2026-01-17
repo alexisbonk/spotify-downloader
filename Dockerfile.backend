@@ -11,7 +11,7 @@ RUN apk add --no-cache \
 RUN pip3 install --no-cache-dir --break-system-packages spotdl==4.4.3 yt-dlp
 
 COPY backend/package*.json ./
-RUN npm ci --only=production
+RUN npm install --only=production
 
 COPY backend/ ./
 
